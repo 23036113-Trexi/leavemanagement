@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - GeoLah Leave Management</title>
+    <link rel="stylesheet" href="/css/leave-request.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>GeoLah Leave Management System</h1>
+            <h2><%= title %></h2>
+        </header>
+
+        <main class="main-content">
+            <form id="leaveRequestForm" action="/submit-leave-request" method="POST" class="leave-form">
+                
+                <!-- Leave Type -->
+                <div class="form-group">
+                    <label for="leaveType" class="form-label">Leave Type <span class="required">*</span></label>
+                    <select id="leaveType" name="leave_type_id" class="form-control" required>
+                        <option value="">Select Leave Type</option>
+                        <% leaveTypes.forEach(function(leaveType) { %>
+                            <option value="<%= leaveType.id %>"><%= leaveType.type %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <!-- Start Date -->
+                <div class="form-group">
+                    <label for="startDate" class="form-label">Start Date <span class="required">*</span></label>
+                    <input type="date" id="startDate" name="start_date" class="form-control" required>
+                </div>
+
+                <!-- End Date -->
+                <div class="form-group">
+                    <label for="endDate" class="form-label">End Date <span class="required">*</span></label>
+                    <input type="date" id="endDate" name="end_date" class="form-control" required>
+                </div>
+
+                <!-- Half Day Option -->
+                <div class="form-group">
+                    <label class="form-label">Half Day Option</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="half_day" value="" checked>
+                            <span class="radio-text">Full Day</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="half_day" value="AM">
+                            <span class="radio-text">Morning Half Day (AM)</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="half_day" value="PM">
+                            <span class="radio-text">Afternoon Half Day (PM)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Number of Days (Auto-calculated) -->
+                <div class="form-group">
+                    <label for="numberOfDays" class="form-label">Number of Days</label>
+                    <input type="text" id="numberOfDays" name="number_of_days" class="form-control" readonly>
+                    <small class="form-help">This will be calculated automatically based on your date selection</small>
+                </div>
+
+                <!-- Reason -->
+                <div class="form-group">
+                    <label for="reason" class="form-label">Reason <span class="required">*</span></label>
+                    <textarea id="reason" name="reason" class="form-control" rows="4" 
+                              placeholder="Please provide the reason for your leave request..." 
+                              maxlength="500" required></textarea>
+                    <small class="form-help">Maximum 500 characters</small>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Submit Leave Request</button>
+                    <button type="reset" class="btn btn-secondary">Clear Form</button>
+                </div>
+
+                <!-- Error/Success Messages -->
+                <div id="messageContainer" class="message-container" style="display: none;">
+                    <div id="messageContent" class="message"></div>
+                </div>
+
+            </form>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 GeoLah Leave Management System</p>
+        </footer>
+    </div>
+
+    <script src="/js/leave-request.js"></script>
+</body>
+</html>
