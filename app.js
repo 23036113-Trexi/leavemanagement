@@ -52,6 +52,26 @@ app.get('/leave-request-form', (req, res) => {
     });
 });
 
+// GET /leave-types - API endpoint to fetch available leave types
+app.get('/leave-types', (req, res) => {
+    const query = 'SELECT id, type FROM leave_type';
+    
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching leave types:', err);
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Error fetching leave types' 
+            });
+        }
+        
+        res.json({ 
+            success: true, 
+            data: results 
+        });
+    });
+});
+
 // Helper function to calculate working days between two dates
 function calculateWorkingDays(startDate, endDate, isHalfDay = null) {
     const start = new Date(startDate);
