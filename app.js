@@ -72,6 +72,7 @@ app.get('/leave-types', (req, res) => {
     });
 });
 
+
 // GET /employee/leave-balance/:user_id - Get employee's leave balance
 app.get('/employee/leave-balance/:user_id', (req, res) => {
     const { user_id } = req.params;
@@ -113,6 +114,202 @@ app.get('/employee/leave-balance/:user_id', (req, res) => {
                 medical_leave_balance: parseFloat(leaveBalance.medical_leave_balance),
                 other_leave_balance: parseFloat(leaveBalance.other_leave_balance)
             }
+        });
+    });
+});
+
+// GET /employee/leave-requests/:user_id - Get employee's upcoming leave requests
+app.get('/employee/leave-requests/:user_id', (req, res) => {
+    const { user_id } = req.params;
+    
+    // Validate user_id parameter
+    if (!user_id || isNaN(user_id)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Valid user ID is required'
+        });
+    }
+    
+    // Query to get upcoming leave requests with leave type and approval status
+    const query = `
+        SELECT 
+            lr.id,
+            lr.request_date,
+            lr.start_date,
+            lr.end_date,
+            lr.half_day,
+            lr.reason,
+            lr.number_of_days,
+            lt.type as leave_type,
+            lra.status as approval_status,
+            lra.comment as approval_comment
+        FROM leave_request lr
+        LEFT JOIN leave_type lt ON lr.leave_type_id = lt.id
+        LEFT JOIN leave_request_approval lra ON lr.id = lra.leave_request_id
+        WHERE lr.user_id = ? AND lr.start_date >= CURDATE()
+        ORDER BY lr.start_date ASC
+    `;
+    
+    db.query(query, [user_id], (err, results) => {
+        if (err) {
+            console.error('Error fetching leave requests:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Error fetching leave requests'
+            });
+        }
+        
+        // Format the results
+        const formattedResults = results.map(request => ({
+            id: request.id,
+            request_date: request.request_date,
+            start_date: request.start_date,
+            end_date: request.end_date,
+            half_day: request.half_day,
+            reason: request.reason,
+            number_of_days: parseFloat(request.number_of_days),
+            leave_type: request.leave_type,
+            approval_status: request.approval_status || 'pending',
+            approval_comment: request.approval_comment || null
+        }));
+        
+        res.json({
+            success: true,
+            data: {
+                user_id: parseInt(user_id),
+                upcoming_requests: formattedResults,
+                total_requests: formattedResults.length
+            }
+        });
+    });
+});
+
+// GET /employee/leave-history/:user_id - Get employee's leave request history with pagination
+app.get('/employee/leave-history/:user_id', (req, res) => {
+    const { user_id } = req.params;
+    const { page = 1, limit = 10, status, leave_type } = req.query;
+    
+    // Validate user_id parameter
+    if (!user_id || isNaN(user_id)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Valid user ID is required'
+        });
+    }
+    
+    // Validate pagination parameters
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    
+    if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid pagination parameters. Page must be >= 1, limit must be 1-100'
+        });
+    }
+    
+    const offset = (pageNum - 1) * limitNum;
+    
+    // Build WHERE clause for filtering
+    let whereClause = 'WHERE lr.user_id = ?';
+    let queryParams = [user_id];
+    
+    if (status) {
+        if (status === 'pending') {
+            whereClause += ' AND (lra.status IS NULL OR lra.status = "")';
+        } else if (status === 'approved' || status === 'rejected') {
+            whereClause += ' AND lra.status = ?';
+            queryParams.push(status);
+        }
+    }
+    
+    if (leave_type) {
+        whereClause += ' AND lt.type = ?';
+        queryParams.push(leave_type);
+    }
+    
+    // Query to get total count for pagination
+    const countQuery = `
+        SELECT COUNT(*) as total
+        FROM leave_request lr
+        LEFT JOIN leave_type lt ON lr.leave_type_id = lt.id
+        LEFT JOIN leave_request_approval lra ON lr.id = lra.leave_request_id
+        ${whereClause}
+    `;
+    
+    db.query(countQuery, queryParams, (err, countResult) => {
+        if (err) {
+            console.error('Error counting leave history:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Error fetching leave history count'
+            });
+        }
+        
+        const totalRecords = countResult[0].total;
+        const totalPages = Math.ceil(totalRecords / limitNum);
+        
+        // Query to get leave history with pagination
+        const historyQuery = `
+            SELECT 
+                lr.id,
+                lr.request_date,
+                lr.start_date,
+                lr.end_date,
+                lr.half_day,
+                lr.reason,
+                lr.number_of_days,
+                lt.type as leave_type,
+                lra.status as approval_status,
+                lra.comment as approval_comment
+            FROM leave_request lr
+            LEFT JOIN leave_type lt ON lr.leave_type_id = lt.id
+            LEFT JOIN leave_request_approval lra ON lr.id = lra.leave_request_id
+            ${whereClause}
+            ORDER BY lr.request_date DESC, lr.start_date DESC
+            LIMIT ? OFFSET ?
+        `;
+        
+        const historyParams = [...queryParams, limitNum, offset];
+        
+        db.query(historyQuery, historyParams, (err, results) => {
+            if (err) {
+                console.error('Error fetching leave history:', err);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error fetching leave history'
+                });
+            }
+            
+            // Format the results
+            const formattedResults = results.map(request => ({
+                id: request.id,
+                request_date: request.request_date,
+                start_date: request.start_date,
+                end_date: request.end_date,
+                half_day: request.half_day,
+                reason: request.reason,
+                number_of_days: parseFloat(request.number_of_days),
+                leave_type: request.leave_type,
+                approval_status: request.approval_status || 'pending',
+                approval_comment: request.approval_comment || null
+            }));
+            
+            res.json({
+                success: true,
+                data: {
+                    user_id: parseInt(user_id),
+                    leave_history: formattedResults,
+                    pagination: {
+                        current_page: pageNum,
+                        total_pages: totalPages,
+                        total_records: totalRecords,
+                        records_per_page: limitNum,
+                        has_next_page: pageNum < totalPages,
+                        has_previous_page: pageNum > 1
+                    }
+                }
+            });
         });
     });
 });
