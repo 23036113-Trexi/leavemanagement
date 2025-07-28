@@ -72,6 +72,51 @@ app.get('/leave-types', (req, res) => {
     });
 });
 
+// GET /employee/leave-balance/:user_id - Get employee's leave balance
+app.get('/employee/leave-balance/:user_id', (req, res) => {
+    const { user_id } = req.params;
+    
+    // Validate user_id parameter
+    if (!user_id || isNaN(user_id)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Valid user ID is required'
+        });
+    }
+    
+    // Query to get leave balance for the user
+    const query = 'SELECT annual_leave_balance, medical_leave_balance, other_leave_balance FROM leave_balance WHERE user_id = ?';
+    
+    db.query(query, [user_id], (err, results) => {
+        if (err) {
+            console.error('Error fetching leave balance:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Error fetching leave balance'
+            });
+        }
+        
+        if (results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User leave balance not found'
+            });
+        }
+        
+        const leaveBalance = results[0];
+        
+        res.json({
+            success: true,
+            data: {
+                user_id: parseInt(user_id),
+                annual_leave_balance: parseFloat(leaveBalance.annual_leave_balance),
+                medical_leave_balance: parseFloat(leaveBalance.medical_leave_balance),
+                other_leave_balance: parseFloat(leaveBalance.other_leave_balance)
+            }
+        });
+    });
+});
+
 // Helper function to calculate working days between two dates
 function calculateWorkingDays(startDate, endDate, isHalfDay = null) {
     const start = new Date(startDate);
@@ -118,7 +163,11 @@ function getLeaveBalanceField(leaveTypeId) {
 
 // POST /submit-leave-request - Process leave request submission
 app.post('/submit-leave-request', (req, res) => {
-    const { leave_type_id, start_date, end_date, half_day, reason, user_id } = req.body;
+    let { leave_type_id, start_date, end_date, half_day, reason, user_id } = req.body;
+
+    if (!user_id){
+        user_id = 1
+    }
     
     // Basic validation
     if (!leave_type_id || !start_date || !end_date || !reason || !user_id) {
@@ -177,9 +226,47 @@ app.post('/submit-leave-request', (req, res) => {
             });
         }
         
-        // Check leave balance
-        const balanceQuery = `SELECT ${balanceField} FROM leave_balance WHERE user_id = ?`;
-        db.query(balanceQuery, [user_id], (err, balanceResult) => {
+        // Check for overlapping leave requests
+        const overlapQuery = `
+            SELECT id, start_date, end_date, leave_type_id 
+            FROM leave_request 
+            WHERE user_id = ? 
+            AND (
+                (start_date <= ? AND end_date >= ?) OR
+                (start_date <= ? AND end_date >= ?) OR
+                (start_date >= ? AND end_date <= ?)
+            )
+        `;
+        
+        db.query(overlapQuery, [
+            user_id, 
+            start_date, start_date,  // Check if new start falls within existing range
+            end_date, end_date,      // Check if new end falls within existing range  
+            start_date, end_date     // Check if new range completely encompasses existing range
+        ], (err, overlapResult) => {
+            if (err) {
+                return db.rollback(() => {
+                    console.error('Overlap check error:', err);
+                    res.status(500).json({ 
+                        success: false, 
+                        message: 'Error checking for overlapping requests' 
+                    });
+                });
+            }
+            
+            if (overlapResult.length > 0) {
+                const conflictingRequest = overlapResult[0];
+                return db.rollback(() => {
+                    res.status(400).json({ 
+                        success: false, 
+                        message: `Leave request overlaps with existing request from ${conflictingRequest.start_date} to ${conflictingRequest.end_date}` 
+                    });
+                });
+            }
+            
+            // Check leave balance
+            const balanceQuery = `SELECT ${balanceField} FROM leave_balance WHERE user_id = ?`;
+            db.query(balanceQuery, [user_id], (err, balanceResult) => {
             if (err) {
                 return db.rollback(() => {
                     console.error('Balance check error:', err);
@@ -271,6 +358,7 @@ app.post('/submit-leave-request', (req, res) => {
                     });
                 });
             });
+        });
         });
     });
 });
