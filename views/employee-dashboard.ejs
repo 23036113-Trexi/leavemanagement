@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - GeoLah Leave Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/employee-dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="/images/icon.png" alt="GeoLah" class="header-logo">
+            <h2>Employee Leave Management Dashboard</h2>
+            <div class="user-info">
+                <span>Welcome, <%= user && user.name ? user.name : (user && user.email ? user.email : 'Employee') %> (<%= user && user.role ? user.role : 'Unknown' %>)</span>
+                <form action="/logout" method="POST" style="display: inline-block; margin-left: 15px;">
+                    <button type="submit" class="btn btn-secondary btn-small">Logout</button>
+                </form>
+            </div>
+        </header>
+
+        <main class="main-content">
+            
+            <!-- Quick Action Section -->
+            <section class="quick-actions">
+                <a href="/leave-request-form" class="btn btn-primary">
+                    <span class="btn-icon">+</span>
+                    Submit New Leave Request
+                </a>
+            </section>
+
+            <!-- Leave Balances Section -->
+            <section class="dashboard-section">
+                <h3 class="section-title">Leave Balances</h3>
+                <div class="leave-balances-grid">
+                    <div class="balance-card annual-leave">
+                        <div class="balance-header">
+                            <h4>Annual Leave</h4>
+                            <span class="balance-icon">🏖️</span>
+                        </div>
+                        <div class="balance-content">
+                            <div class="balance-amount">
+                                <span class="current-balance" data-balance-type="annual">--</span>
+                                <span class="balance-unit">days</span>
+                            </div>
+                            <div class="balance-bar">
+                                <div class="balance-progress" data-progress-type="annual"></div>
+                            </div>
+                            <div class="balance-details">
+                                <span class="used-balance">Used: <span data-used-type="annual">--</span></span>
+                                <span class="total-balance">Total: <span data-total-type="annual">--</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="balance-card medical-leave">
+                        <div class="balance-header">
+                            <h4>Medical Leave</h4>
+                            <span class="balance-icon">🏥</span>
+                        </div>
+                        <div class="balance-content">
+                            <div class="balance-amount">
+                                <span class="current-balance" data-balance-type="medical">--</span>
+                                <span class="balance-unit">days</span>
+                            </div>
+                            <div class="balance-bar">
+                                <div class="balance-progress" data-progress-type="medical"></div>
+                            </div>
+                            <div class="balance-details">
+                                <span class="used-balance">Used: <span data-used-type="medical">--</span></span>
+                                <span class="total-balance">Total: <span data-total-type="medical">--</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="balance-card other-leave">
+                        <div class="balance-header">
+                            <h4>Other Leave</h4>
+                            <span class="balance-icon">📋</span>
+                        </div>
+                        <div class="balance-content">
+                            <div class="balance-amount">
+                                <span class="current-balance" data-balance-type="other">--</span>
+                                <span class="balance-unit">days</span>
+                            </div>
+                            <div class="balance-bar">
+                                <div class="balance-progress" data-progress-type="other"></div>
+                            </div>
+                            <div class="balance-details">
+                                <span class="used-balance">Used: <span data-used-type="other">--</span></span>
+                                <span class="total-balance">Total: <span data-total-type="other">--</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upcoming Leave Requests Section -->
+            <section class="dashboard-section">
+                <h3 class="section-title">Upcoming Leave Requests</h3>
+                <div class="requests-container">
+                    <div class="requests-header">
+                        <div class="requests-controls">
+                            <button class="btn btn-secondary btn-small" id="refreshRequests">
+                                <span class="btn-icon">↻</span>
+                                Refresh
+                            </button>
+                            <select id="statusFilter" class="form-control form-control-small">
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="requests-table-container">
+                        <table class="requests-table" id="upcomingRequestsTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-column="leave_type">Leave Type</th>
+                                    <th class="sortable" data-column="start_date">Start Date</th>
+                                    <th class="sortable" data-column="end_date">End Date</th>
+                                    <th class="sortable" data-column="days">Days</th>
+                                    <th class="sortable" data-column="status">Status</th>
+                                    <th>Document</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="upcomingRequestsBody">
+                                <tr class="no-data-row">
+                                    <td colspan="7" class="no-data">
+                                        <div class="loading-spinner" id="requestsLoadingSpinner">
+                                            <div class="spinner"></div>
+                                            <span>Loading requests...</span>
+                                        </div>
+                                        <div class="no-requests-message" id="noRequestsMessage" style="display: none;">
+                                            <span class="no-data-icon">📅</span>
+                                            <span>No upcoming leave requests found</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Team Management Section - Manager and Admin only -->
+            <% if (user && (user.role === 'manager' || user.role === 'admin')) { %>
+            <section class="dashboard-section">
+                <h3 class="section-title">🔧 Team Management</h3>
+                <div class="team-management-grid">
+                    <div class="management-card">
+                        <div class="card-header">
+                            <h4>Pending Approvals</h4>
+                            <span class="card-icon">⏳</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">
+                                <span class="count-number" id="pendingApprovalsCount">--</span>
+                                <span class="metric-label">requests awaiting review</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-primary btn-small" onclick="viewPendingApprovals()">
+                                    Review Requests
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="management-card">
+                        <div class="card-header">
+                            <h4>Team Leave Overview</h4>
+                            <span class="card-icon">👥</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">
+                                <span class="count-number" id="teamMembersCount">--</span>
+                                <span class="metric-label">team members</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-small" onclick="viewTeamCalendar()">
+                                    View Team Calendar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            <% } %>
+
+            <!-- Manager Request Management Section - Manager and Admin only -->
+            <% if (user && (user.role === 'manager' || user.role === 'admin')) { %>
+            <section id="manager-section" class="dashboard-section">
+                <h3 class="section-title">📋 Team Leave Requests</h3>
+                
+                <!-- Manager Filters -->
+                <div class="manager-filters">
+                    <div class="filter-group">
+                        <label for="managerStatusFilter">Status</label>
+                        <select id="managerStatusFilter" class="form-control">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="managerEmployeeFilter">Employee</label>
+                        <select id="managerEmployeeFilter" class="form-control">
+                            <option value="">All Employees</option>
+                            <!-- Options populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="managerLeaveTypeFilter">Leave Type</label>
+                        <select id="managerLeaveTypeFilter" class="form-control">
+                            <option value="">All Types</option>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="Medical Leave">Medical Leave</option>
+                            <option value="Other Leaves">Other Leaves</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="managerStartDate">From Date</label>
+                        <input type="date" id="managerStartDate" class="form-control">
+                    </div>
+                    <div class="filter-group">
+                        <label for="managerEndDate">To Date</label>
+                        <input type="date" id="managerEndDate" class="form-control">
+                    </div>
+                    <div class="filter-actions">
+                        <button id="clearManagerFilters" class="clear-filters-btn">Clear Filters</button>
+                        <button id="exportToExcel" class="btn btn-success btn-small export-btn" onclick="exportTeamRequestsToExcel()" title="Export filtered data to Excel">
+                            <span class="btn-icon">📊</span>
+                            Export to Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manager Requests Container -->
+                <div class="manager-requests-container">
+                    <!-- Loading State -->
+                    <div id="manager-requests-loading" class="manager-loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <span class="manager-loading-text">Loading team requests...</span>
+                    </div>
+
+                    <!-- Error State -->
+                    <div id="manager-requests-error" class="manager-alert error" style="display: none;">
+                        Failed to load team requests. Please try again.
+                    </div>
+
+                    <!-- Content -->
+                    <div id="manager-requests-content" style="display: none;">
+                        <div class="manager-requests-table-container">
+                            <table class="manager-requests-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Leave Type</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Reason</th>
+                                        <th>Document</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="managerRequestsBody">
+                                    <!-- Request rows populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div id="managerPagination"></div>
+                    </div>
+                </div>
+            </section>
+            <% } %>
+
+            <!-- System Administration Section - Admin only -->
+            <% if (user && user.role === 'admin') { %>
+            <section class="dashboard-section">
+                <h3 class="section-title">⚙️ System Administration</h3>
+                <div class="admin-management-grid">
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h4>User Management</h4>
+                            <span class="card-icon">👤</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">
+                                <span class="count-number" id="totalUsersCount">--</span>
+                                <span class="metric-label">total users</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-primary btn-small" onclick="manageUsers()">
+                                    Manage Users
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h4>Leave Types</h4>
+                            <span class="card-icon">📋</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">
+                                <span class="count-number" id="leaveTypesCount">--</span>
+                                <span class="metric-label">leave types configured</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-small" onclick="manageLeaveTypes()">
+                                    Configure Types
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            <% } %>
+
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 GeoLah Leave Management System</p>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div id="requestDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Leave Request Details</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Request details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Manager Request Details Modal -->
+    <div id="managerRequestDetailsModal" class="modal manager-modal-overlay" style="display: none;">
+        <div class="modal-content manager-modal-content">
+            <div class="modal-header manager-modal-header">
+                <h3>Team Member Leave Request</h3>
+                <button class="modal-close" id="closeManagerModal">&times;</button>
+            </div>
+            <div class="modal-body manager-modal-body" id="managerModalBody">
+                <!-- Manager request details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Modal -->
+    <div id="approvalModal" class="modal manager-modal-overlay" style="display: none;">
+        <div class="modal-content manager-modal-content">
+            <div class="modal-header manager-modal-header">
+                <h3>Approve Leave Request</h3>
+                <button class="modal-close" id="closeApprovalModal">&times;</button>
+            </div>
+            <div class="modal-body manager-modal-body" id="approvalModalBody">
+                <!-- Approval form will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div id="rejectionModal" class="modal manager-modal-overlay" style="display: none;">
+        <div class="modal-content manager-modal-content">
+            <div class="modal-header manager-modal-header">
+                <h3>Reject Leave Request</h3>
+                <button class="modal-close" id="closeRejectionModal">&times;</button>
+            </div>
+            <div class="modal-body manager-modal-body" id="rejectionModalBody">
+                <!-- Rejection form will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/employee-dashboard.js"></script>
+</body>
+</html>

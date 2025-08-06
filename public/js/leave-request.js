@@ -6,8 +6,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const halfDayRadios = document.querySelectorAll('input[name="half_day"]');
     const messageContainer = document.getElementById('messageContainer');
     const messageContent = document.getElementById('messageContent');
+    const leaveTypeSelect = document.getElementById('leaveType');
+    const supportingDocumentGroup = document.getElementById('supportingDocumentGroup');
+    const supportingDocumentInput = document.getElementById('supportingDocument');
+    
+    // No need to get user_id from URL anymore - using session-based authentication
 
-    // Set minimum date to today
+    // Set minimum date to today by default
     const today = new Date().toISOString().split('T')[0];
     startDateInput.min = today;
     endDateInput.min = today;
@@ -55,7 +60,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Event listeners for date calculation
     startDateInput.addEventListener('change', function() {
-        endDateInput.min = this.value;
+        const selectedOption = leaveTypeSelect.options[leaveTypeSelect.selectedIndex];
+        const leaveTypeText = selectedOption.text.toLowerCase().trim();
+        
+        if (leaveTypeText.includes('medical')) {
+            // For medical leave, end date minimum should be the start date (not today)
+            endDateInput.min = this.value;
+        } else {
+            // For other leave types, end date minimum should be either start date or today, whichever is later
+            endDateInput.min = this.value > today ? this.value : today;
+        }
         calculateDays();
     });
 
@@ -63,6 +77,84 @@ document.addEventListener('DOMContentLoaded', function() {
 
     halfDayRadios.forEach(radio => {
         radio.addEventListener('change', calculateDays);
+    });
+
+    // Show/hide file upload and update date restrictions based on leave type
+    function toggleFileUpload() {
+        const selectedOption = leaveTypeSelect.options[leaveTypeSelect.selectedIndex];
+        const leaveTypeText = selectedOption.text.toLowerCase().trim();
+        
+        // Show file upload for Medical Leave and Other Leaves (handle various cases)
+        if (leaveTypeText.includes('medical') || leaveTypeText.includes('other')) {
+            supportingDocumentGroup.style.display = 'block';
+        } else {
+            supportingDocumentGroup.style.display = 'none';
+            // Clear file selection when hidden
+            supportingDocumentInput.value = '';
+        }
+        
+        // Update date restrictions based on leave type
+        updateDateRestrictions();
+    }
+    
+    // Update date minimum values based on leave type
+    function updateDateRestrictions() {
+        const selectedOption = leaveTypeSelect.options[leaveTypeSelect.selectedIndex];
+        const leaveTypeText = selectedOption.text.toLowerCase().trim();
+        
+        if (leaveTypeText.includes('medical')) {
+            // Allow backdating for medical leave - remove minimum date restriction
+            startDateInput.removeAttribute('min');
+            // If start date is selected, end date minimum should be start date
+            if (startDateInput.value) {
+                endDateInput.min = startDateInput.value;
+            } else {
+                endDateInput.removeAttribute('min');
+            }
+        } else {
+            // For non-medical leave, set minimum date to today
+            startDateInput.min = today;
+            // If start date is selected, end date minimum should be either start date or today, whichever is later
+            if (startDateInput.value) {
+                endDateInput.min = startDateInput.value > today ? startDateInput.value : today;
+            } else {
+                endDateInput.min = today;
+            }
+        }
+    }
+
+    // Event listener for leave type changes
+    leaveTypeSelect.addEventListener('change', toggleFileUpload);
+    
+    // Call toggleFileUpload on page load to handle any pre-selected values
+    toggleFileUpload();
+
+    // File validation
+    function validateFile(file) {
+        if (!file) return true; // File is optional
+        
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 
+                             'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!allowedTypes.includes(file.type)) {
+            showMessage('Invalid file type. Only JPG, PNG, PDF, DOC, and DOCX files are allowed.', 'error');
+            return false;
+        }
+        
+        if (file.size > maxSize) {
+            showMessage('File size exceeds 5MB limit. Please choose a smaller file.', 'error');
+            return false;
+        }
+        
+        return true;
+    }
+
+    // File input change handler
+    supportingDocumentInput.addEventListener('change', function() {
+        if (this.files[0]) {
+            validateFile(this.files[0]);
+        }
     });
 
     // Form validation
@@ -93,13 +185,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Validate future dates
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Validate future dates (except for medical leave which allows backdating)
+        const todayDate = new Date();
+        todayDate.setHours(0, 0, 0, 0);
         
-        if (startDateInput.value) {
+        const selectedOption = leaveTypeSelect.options[leaveTypeSelect.selectedIndex];
+        const leaveTypeText = selectedOption.text.toLowerCase().trim();
+        const isMedicalLeave = leaveTypeText.includes('medical');
+        
+        if (startDateInput.value && !isMedicalLeave) {
             const startDate = new Date(startDateInput.value);
-            if (startDate < today) {
+            if (startDate < todayDate) {
                 startDateInput.classList.add('invalid');
                 showMessage('Start date cannot be in the past', 'error');
                 isValid = false;
@@ -131,33 +227,35 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.textContent = 'Submitting...';
         submitBtn.classList.add('loading');
 
-        // Prepare form data
+        // Validate file if present
+        const fileInput = supportingDocumentInput.files[0];
+        if (fileInput && !validateFile(fileInput)) {
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            submitBtn.classList.remove('loading');
+            return;
+        }
+
+        // Prepare form data (use FormData for file upload support)
         const formData = new FormData(form);
         
-        // Convert to JSON
-        const data = {};
-        formData.forEach((value, key) => {
-            data[key] = value;
-        });
+        // User ID is handled by session authentication, no need to add it
 
         // Submit via fetch
         fetch('/submit-leave-request', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
+            body: formData
         })
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                showMessage('Leave request submitted successfully!', 'success');
-                form.reset();
-                numberOfDaysInput.value = '';
-                // Remove validation classes
-                form.querySelectorAll('.valid, .invalid').forEach(field => {
-                    field.classList.remove('valid', 'invalid');
-                });
+                showMessage('Leave request submitted successfully! Redirecting to dashboard...', 'success');
+                
+                // Redirect to dashboard after a short delay
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1500); // 1.5 second delay to show the success message
             } else {
                 showMessage(result.message || 'Error submitting leave request', 'error');
             }
@@ -230,6 +328,8 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             numberOfDaysInput.value = '';
             hideMessage();
+            // Hide file upload field
+            supportingDocumentGroup.style.display = 'none';
             // Remove all validation classes
             form.querySelectorAll('.valid, .invalid').forEach(field => {
                 field.classList.remove('valid', 'invalid');

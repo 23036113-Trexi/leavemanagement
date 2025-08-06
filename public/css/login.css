@@ -1,0 +1,814 @@
+/* Login Page Styles */
+
+/* Reset and base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: white;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Login Container */
+.login-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+    margin: 2rem;
+    position: relative;
+}
+
+/* Login Header */
+.login-header {
+    background: #000000;
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.login-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.03) 2px,
+        rgba(255, 255, 255, 0.03) 4px
+    );
+    animation: slide 20s linear infinite;
+}
+
+@keyframes slide {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.company-logo {
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.company-logo img {
+    height: 60px;
+    width: auto;
+    max-width: 200px;
+}
+
+.login-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+}
+
+/* Login Form */
+.login-form {
+    padding: 2rem;
+}
+
+.form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #f8fafc;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-input:focus {
+    border-color: #667eea;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-input::placeholder {
+    color: #a0aec0;
+    font-style: italic;
+}
+
+/* Input Icons */
+.input-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+    font-size: 1.1rem;
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+.form-input:focus + .input-icon {
+    color: #667eea;
+}
+
+
+/* Login Button */
+.login-btn {
+    width: 100%;
+    background: #000000;
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Loading State */
+.login-btn.loading {
+    color: transparent;
+}
+
+.login-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error Messages */
+.error-message {
+    background-color: #fed7d7;
+    color: #c53030;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid #feb2b2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.error-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Success Messages */
+.success-message {
+    background-color: #c6f6d5;
+    color: #22543d;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid #9ae6b4;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.success-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Form Validation */
+.form-input.error {
+    border-color: #e53e3e;
+    background-color: #fef5e7;
+}
+
+.form-input.error:focus {
+    border-color: #c53030;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.field-error {
+    color: #c53030;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.field-error-icon {
+    font-size: 0.8rem;
+}
+
+/* Footer */
+.login-footer {
+    text-align: center;
+    padding: 1.5rem 2rem;
+    background-color: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.login-footer p {
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-container {
+        margin: 1rem;
+        max-width: 100%;
+        border-radius: 12px;
+    }
+    
+    .login-header {
+        padding: 1.5rem;
+    }
+    
+    .company-logo img {
+        height: 50px;
+    }
+    
+    .login-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .login-form {
+        padding: 1.5rem;
+    }
+    
+    .form-title {
+        font-size: 1.25rem;
+    }
+    
+    .login-footer {
+        padding: 1rem 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .login-container {
+        margin: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .login-header {
+        padding: 1.25rem;
+    }
+    
+    .company-logo img {
+        height: 40px;
+    }
+    
+    .login-subtitle {
+        font-size: 0.8rem;
+    }
+    
+    .login-form {
+        padding: 1.25rem;
+    }
+    
+    .form-title {
+        font-size: 1.1rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-input {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .login-btn {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .login-footer {
+        padding: 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    }
+    
+    .login-container {
+        background-color: #1a202c;
+        color: #e2e8f0;
+    }
+    
+    .form-title {
+        color: #e2e8f0;
+    }
+    
+    .form-label {
+        color: #cbd5e0;
+    }
+    
+    .form-input {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .form-input:focus {
+        background-color: #374151;
+        border-color: #667eea;
+    }
+    
+    
+    .login-footer {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #a0aec0;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .form-input {
+        border-width: 3px;
+    }
+    
+    .form-input:focus {
+        border-width: 3px;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    }
+    
+    .login-button {
+        border: 2px solid transparent;
+    }
+    
+    .login-button:focus {
+        outline: 3px solid white;
+        outline-offset: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .login-header::before {
+        animation: none;
+    }
+    
+    .form-input,
+    .login-button,
+    .input-icon {
+        transition: none;
+    }
+    
+    .login-button.loading::after {
+        animation: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .login-container {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .login-header {
+        background: #f0f0f0;
+        color: #000;
+    }
+    
+    .login-button {
+        background: #f0f0f0;
+        color: #000;
+        border: 1px solid #000;
+    }
+}
+
+/* Password Reset Specific Styles */
+
+/* Forgot Password Link */
+.forgot-password-section {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.forgot-password-link {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+}
+
+.forgot-password-link:hover {
+    color: #5a67d8;
+    background-color: rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Back to Login Link */
+.back-to-login-section {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.back-to-login-link {
+    color: #718096;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+}
+
+.back-to-login-link:hover {
+    color: #4a5568;
+    background-color: rgba(113, 128, 150, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Password Reset Info */
+.password-reset-info {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: #f7fafc;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.info-text {
+    font-size: 0.875rem;
+    color: #4a5568;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Security Notice */
+.security-notice {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: #fef5e7;
+    border-radius: 8px;
+    border-left: 4px solid #f6ad55;
+}
+
+.security-notice .info-text {
+    color: #744210;
+}
+
+/* Password Strength Indicator */
+.password-strength-indicator {
+    margin-top: 0.5rem;
+}
+
+.strength-bar {
+    width: 100%;
+    height: 4px;
+    background-color: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-fill.weak {
+    background-color: #f56565;
+}
+
+.strength-fill.medium {
+    background-color: #ed8936;
+}
+
+.strength-fill.strong {
+    background-color: #48bb78;
+}
+
+.strength-text {
+    font-size: 0.75rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.strength-level.weak {
+    color: #f56565;
+}
+
+.strength-level.medium {
+    color: #ed8936;
+}
+
+.strength-level.strong {
+    color: #48bb78;
+}
+
+/* Password Match Indicator */
+.password-match-indicator {
+    margin-top: 0.5rem;
+    min-height: 1.2rem;
+}
+
+.match-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.match-text.match {
+    color: #48bb78;
+}
+
+.match-text.no-match {
+    color: #f56565;
+}
+
+/* Password Requirements */
+.password-requirements {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: #f7fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.password-requirements h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.password-requirements ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.requirement {
+    font-size: 0.75rem;
+    color: #718096;
+    padding: 0.25rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.requirement::before {
+    content: '✗';
+    position: absolute;
+    left: 0;
+    color: #f56565;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.requirement.met {
+    color: #48bb78;
+}
+
+.requirement.met::before {
+    content: '✓';
+    color: #48bb78;
+}
+
+/* Form adjustments for password reset */
+.login-main .form-group:last-of-type {
+    margin-bottom: 1.5rem;
+}
+
+/* Enhanced button states for password reset */
+.login-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    background-color: #a0aec0;
+}
+
+.login-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Responsive adjustments for password reset */
+@media (max-width: 768px) {
+    .password-requirements {
+        margin: 1rem 0;
+        padding: 0.75rem;
+    }
+    
+    .password-requirements h4 {
+        font-size: 0.8rem;
+    }
+    
+    .requirement {
+        font-size: 0.7rem;
+    }
+    
+    .forgot-password-section,
+    .back-to-login-section {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+    }
+    
+    .password-reset-info,
+    .security-notice {
+        margin-top: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .info-text {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .password-requirements {
+        margin: 0.75rem 0;
+        padding: 0.5rem;
+    }
+    
+    .password-requirements h4 {
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .requirement {
+        font-size: 0.65rem;
+        padding: 0.2rem 0;
+        padding-left: 1.25rem;
+    }
+    
+    .strength-text {
+        font-size: 0.7rem;
+    }
+    
+    .match-text {
+        font-size: 0.7rem;
+    }
+    
+    .forgot-password-link,
+    .back-to-login-link {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .password-reset-info,
+    .security-notice {
+        padding: 0.5rem;
+    }
+    
+    .info-text {
+        font-size: 0.75rem;
+    }
+}
+
+/* Dark mode adjustments for password reset */
+@media (prefers-color-scheme: dark) {
+    .forgot-password-section,
+    .back-to-login-section {
+        border-color: #4a5568;
+    }
+    
+    .password-reset-info {
+        background-color: #2d3748;
+        border-color: #667eea;
+    }
+    
+    .security-notice {
+        background-color: #744210;
+        border-color: #f6ad55;
+    }
+    
+    .security-notice .info-text {
+        color: #fbd38d;
+    }
+    
+    .password-requirements {
+        background-color: #2d3748;
+        border-color: #4a5568;
+    }
+    
+    .password-requirements h4 {
+        color: #e2e8f0;
+    }
+    
+    .strength-bar {
+        background-color: #4a5568;
+    }
+    
+    .strength-text {
+        color: #cbd5e0;
+    }
+    
+    .requirement {
+        color: #a0aec0;
+    }
+    
+    .requirement.met {
+        color: #68d391;
+    }
+}

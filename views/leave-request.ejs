@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> - GeoLah Leave Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/leave-request.css">
 </head>
 <body>
@@ -11,10 +14,16 @@
         <header class="header">
             <h1>GeoLah Leave Management System</h1>
             <h2><%= title %></h2>
+            <div class="header-nav">
+                <a href="/dashboard" class="back-arrow" title="Back to Dashboard">
+                    <span class="arrow-icon">←</span>
+                    <span class="back-text">Back to Dashboard</span>
+                </a>
+            </div>
         </header>
 
         <main class="main-content">
-            <form id="leaveRequestForm" action="/submit-leave-request" method="POST" class="leave-form">
+            <form id="leaveRequestForm" action="/submit-leave-request" method="POST" enctype="multipart/form-data" class="leave-form">
                 
                 <!-- Leave Type -->
                 <div class="form-group">
@@ -67,11 +76,17 @@
 
                 <!-- Reason -->
                 <div class="form-group">
-                    <label for="reason" class="form-label">Reason <span class="required">*</span></label>
+                    <label for="reason" class="form-label">Reason <span class="optional">(optional)</span></label>
                     <textarea id="reason" name="reason" class="form-control" rows="4" 
-                              placeholder="Please provide the reason for your leave request..." 
-                              maxlength="500" required></textarea>
+                              maxlength="500"></textarea>
                     <small class="form-help">Maximum 500 characters</small>
+                </div>
+
+                <!-- Supporting Document -->
+                <div class="form-group" id="supportingDocumentGroup" style="display: none;">
+                    <label for="supportingDocument" class="form-label">Supporting Document <span class="optional">(optional)</span></label>
+                    <input type="file" id="supportingDocument" name="supporting_document" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                    <small class="form-help">Required for Medical Leave and Other Leaves. Accepted formats: JPG, PNG, PDF, DOC, DOCX (Max: 5MB)</small>
                 </div>
 
                 <!-- Submit Button -->
@@ -89,7 +104,7 @@
         </main>
 
         <footer class="footer">
-            <p>&copy; 2024 GeoLah Leave Management System</p>
+            <p>&copy; 2025 GeoLah Leave Management System</p>
         </footer>
     </div>
 

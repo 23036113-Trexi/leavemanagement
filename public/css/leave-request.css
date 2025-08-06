@@ -6,7 +6,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: #333;
     background-color: #f4f4f4;
@@ -22,10 +22,11 @@ body {
 
 /* Header Styles */
 .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #000000;
     color: white;
     padding: 2rem;
     text-align: center;
+    position: relative;
 }
 
 .header h1 {
@@ -37,6 +38,42 @@ body {
     font-size: 1.2rem;
     font-weight: 300;
     opacity: 0.9;
+}
+
+/* Header Navigation */
+.header-nav {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.back-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.back-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(-3px);
+    color: white;
+}
+
+.arrow-icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.back-text {
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 /* Main Content */
@@ -63,6 +100,12 @@ body {
 
 .required {
     color: #e74c3c;
+}
+
+.optional {
+    color: #6c757d;
+    font-weight: normal;
+    font-style: italic;
 }
 
 .form-control {
@@ -146,7 +189,7 @@ textarea.form-control {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #000000;
     color: white;
 }
 
@@ -192,7 +235,7 @@ textarea.form-control {
 
 /* Footer */
 .footer {
-    background-color: #2c3e50;
+    background-color: #000000;
     color: white;
     text-align: center;
     padding: 1rem;
@@ -212,6 +255,22 @@ textarea.form-control {
     
     .header h1 {
         font-size: 1.5rem;
+    }
+    
+    .header-nav {
+        margin-top: 1rem;
+    }
+    
+    .back-arrow {
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .back-text {
+        display: none;
+    }
+    
+    .arrow-icon {
+        font-size: 1rem;
     }
     
     .main-content {
